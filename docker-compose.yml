@@ -1,0 +1,65 @@
+version: '3'
+services:
+
+  # PHP Service
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: persona_tech_app
+    container_name: persona_tech_app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./storage:/var/www/storage
+    networks:
+      - app-network
+
+  # Node Service (Vue.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: persona_tech_frontend
+    container_name: persona_tech_frontend
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend:/app
+    networks:
+      - app-network
+
+  # MySQL Service
+  db:
+    image: mysql:5.7.22
+    container_name: db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: persona_tech
+      MYSQL_ROOT_PASSWORD: Sam2014Mus2021
+      SERVICE_TAGS: dev
+      SERVICE_NAME: db
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - app-network
+
+# Volumes
+volumes:
+  dbdata:
+    driver: local
+
+# Networks
+networks:
+  app-network:
+    driver: bridge
